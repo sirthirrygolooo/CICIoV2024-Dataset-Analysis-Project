@@ -82,7 +82,6 @@ def analyze_execution_time(models, X_train, y_train):
         
         print(f"{model_name} a pris {execution_time:.4f} secondes")
 
-
     exec_df = pd.DataFrame(execution_times, columns=['Model', 'Execution Time'])
     
     plt.figure(figsize=(10, 6))
@@ -93,3 +92,77 @@ def analyze_execution_time(models, X_train, y_train):
     plt.show()
 
     return exec_df
+
+def aggregate_columns(df, id_column, group_size=100, excluded_columns=None):
+    if excluded_columns is None:
+        excluded_columns = []
+    
+    aggregated_data = []
+
+    grouped = df.groupby(id_column)
+    
+    for id_value, group in grouped:
+        for i in range(0, len(group), group_size):
+            sub_group = group.iloc[i:i + group_size]
+            mean_values = sub_group.drop(columns=excluded_columns).mean(axis=0)
+            for col in excluded_columns:
+                if col in sub_group.columns:
+                    mean_values[col] = sub_group[col].iloc[0]
+            mean_values[id_column] = id_value
+            aggregated_data.append(mean_values)
+
+    aggregated_df = pd.DataFrame(aggregated_data)
+    
+    return aggregated_df
+
+import pandas as pd
+
+def aggregate_binary_dataframe(df,id_prefix='ID', group_size=100, excluded_columns=None):
+    if excluded_columns is None:
+        excluded_columns = []
+    
+    id_columns = [col for col in df.columns if col.startswith(id_prefix)]
+    aggregated_data = []
+    grouped = df.groupby(id_columns)
+    
+    for id_values, group in grouped:
+        for i in range(0, len(group), group_size):
+            sub_group = group.iloc[i:i + group_size]
+            
+            mean_values = sub_group.drop(columns=excluded_columns + id_columns).mean(axis=0)
+            
+            for col in excluded_columns:
+                if col in sub_group.columns:
+                    mean_values[col] = sub_group[col].iloc[0]
+            
+            for id_col in id_columns:
+                mean_values[id_col] = sub_group[id_col].iloc[0]
+            
+            aggregated_data.append(mean_values)
+    
+    aggregated_df = pd.DataFrame(aggregated_data)
+    
+    return aggregated_df
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import numpy as np
+
+def plot_normalized_confusion_matrix(model, X_test, y_test, model_name):
+    y_pred = model.predict(X_test)
+    
+    cm = confusion_matrix(y_test, y_pred)
+    
+    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    
+    plt.figure(figsize=(8, 6))
+    
+    sns.heatmap(cm_normalized, annot=True, fmt='.2f', cmap='Blues', cbar=True, 
+                xticklabels=np.unique(y_test), yticklabels=np.unique(y_test))
+    
+    plt.title(f"Normalized Confusion Matrix for {model_name}")
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    
+    plt.show()
