@@ -118,7 +118,7 @@ def aggregate_columns(df, id_column, group_size=100, excluded_columns=None):
 
 import pandas as pd
 
-def aggregate_binary_dataframe(df,id_prefix='ID', group_size=100, excluded_columns=None):
+def aggregate_binary_dataframe(df,id_prefix='ID', group_size=30, excluded_columns=None):
     if excluded_columns is None:
         excluded_columns = []
     
