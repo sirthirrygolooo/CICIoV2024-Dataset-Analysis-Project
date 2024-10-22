@@ -56,7 +56,7 @@ models = {
 
 # aggregated_df.to_csv(f'{EXPORT_PATH_TESTS_DEC}aggregated_df.csv', index=False)
 
-X_train,X_test,y_train,y_test = prepare_data(decimal.aggregated_df)
+X_train,X_test,y_train,y_test = prepare_data(decimal.df_combined)
 train_and_evaluate(models, X_train, X_test, y_train, y_test, "Decimal Aggregated")
 
 # X_train,X_test,y_train,y_test = prepare_data(binary.aggregated_df)
@@ -65,4 +65,3 @@ train_and_evaluate(models, X_train, X_test, y_train, y_test, "Decimal Aggregated
 # X_train, X_test, y_train, y_test = prepare_data(decimal.aggregated_df)
 # train_and_evaluate(models['XGBoost'], X_train, X_test, y_train, y_test, "Dec aggregated")
 # print('ok')
-# plot_normalized_confusion_matrix(model=models['XGBoost'],X_test=X_test,y_test=y_test, model_name="XGBoost")

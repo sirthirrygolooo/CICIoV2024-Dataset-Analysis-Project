@@ -23,7 +23,8 @@ def train_and_evaluate(models, X_train, X_test, y_train, y_test, dataset_name):
     for model_name, model in models.items():
         model.fit(X_train, y_train)
         evaluate_model(model, X_test, y_test, f"{model_name} {dataset_name}")
-        plot_confusion_matrix(model, X_test, y_test, f"{model_name} {dataset_name}")
+        # plot_confusion_matrix(model, X_test, y_test, f"{model_name} {dataset_name}")
+        plot_normalized_confusion_matrix(model,X_test, y_test, f"{model_name} {dataset_name}")
         plot_feature_importance(model, f"{model_name} {dataset_name}", X_test.columns, top_number=5)
 
 def prepare_data(df):
