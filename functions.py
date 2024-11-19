@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import time
 
+
 def evaluate_model(model, X_test, y_test, model_name):
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
@@ -26,6 +27,8 @@ def train_and_evaluate(models, X_train, X_test, y_train, y_test, dataset_name):
         # plot_confusion_matrix(model, X_test, y_test, f"{model_name} {dataset_name}")
         plot_normalized_confusion_matrix(model,X_test, y_test, f"{model_name} {dataset_name}")
         plot_feature_importance(model, f"{model_name} {dataset_name}", X_test.columns, top_number=5)
+
+        y_predict = model.predict
 
 def prepare_data(df):
     X = df.drop(columns=['isMechant'])
@@ -86,7 +89,7 @@ def analyze_execution_time(models, X_train, y_train):
     exec_df = pd.DataFrame(execution_times, columns=['Model', 'Execution Time'])
     
     plt.figure(figsize=(10, 6))
-    sns.barplot(x='Model', y='Execution Time', data=exec_df, palette='Set2')
+    sns.barplot(x='Model', y='Execution Time', data=exec_df, palette='Set2', hue='Model', legend=False)
     plt.title('Temps d\'exécution des modèles')
     plt.xlabel('Modèle')
     plt.ylabel('Temps d\'exécution (secondes)')
@@ -95,6 +98,7 @@ def analyze_execution_time(models, X_train, y_train):
     return exec_df
 
 def aggregate_columns(df, id_column, group_size=100, excluded_columns=None):
+    # print("[!] Groupe size : ", group_size)
     if excluded_columns is None:
         excluded_columns = []
     
@@ -118,7 +122,7 @@ def aggregate_columns(df, id_column, group_size=100, excluded_columns=None):
 
 import pandas as pd
 
-def aggregate_binary_dataframe(df,id_prefix='ID', group_size=100, excluded_columns=None):
+def aggregate_binary_dataframe(df,id_prefix='ID', group_size=519, excluded_columns=None):
     if excluded_columns is None:
         excluded_columns = []
     
@@ -162,3 +166,31 @@ def plot_normalized_confusion_matrix(model, X_test, y_test, model_name):
     plt.ylabel("True Label")
     
     plt.show()
+
+def plot_normalized_confusion_matrix_with_forces(model, X_test, y_test, model_name):
+    y_pred = model.predict(X_test)
+    
+    cm = confusion_matrix(y_test, y_pred)
+    
+    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    
+    n_classes = cm.shape[0]
+    FU = 0
+    FL = 0
+    for i in range(n_classes):
+        FU += cm_normalized[i, i+1:].sum()
+        FL += cm_normalized[i, :i].sum()
+    
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm_normalized, annot=True, fmt='.2f', cmap='Blues', cbar=True, 
+                xticklabels=np.unique(y_test), yticklabels=np.unique(y_test))
+    
+    plt.title(f"Normalized Confusion Matrix for {model_name}")
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.show()
+    
+    print(f"Force Upper (FU): {FU:.2f}")
+    print(f"Force Lower (FL): {FL:.2f}")
+    
+    return cm_normalized, FU, FL
