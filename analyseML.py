@@ -79,7 +79,7 @@ import pandas as pd
 import time
 
 def analyse_time_and_res():
-    i = 100
+    i = 1
     execution_times = []
 
     models = {
@@ -89,7 +89,7 @@ def analyse_time_and_res():
     FU_values = []
     FL_values = []
 
-    while i < 300:
+    while i < 200:
 
         aggregated_df_atk = aggregate_columns(decimal.df_atk_clean, id_column='ID', group_size=i)
         aggregated_df_benign = aggregate_columns(decimal.df_benign_clean, id_column='ID', group_size=i)
