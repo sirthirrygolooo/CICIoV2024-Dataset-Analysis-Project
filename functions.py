@@ -98,7 +98,6 @@ def analyze_execution_time(models, X_train, y_train):
     return exec_df
 
 def aggregate_columns(df, id_column, group_size=100, excluded_columns=None):
-    # print("[!] Groupe size : ", group_size)
     if excluded_columns is None:
         excluded_columns = []
     
@@ -109,10 +108,10 @@ def aggregate_columns(df, id_column, group_size=100, excluded_columns=None):
     for id_value, group in grouped:
         for i in range(0, len(group), group_size):
             sub_group = group.iloc[i:i + group_size]
-            mean_values = sub_group.drop(columns=excluded_columns).mean(axis=0)
+            mean_values = sub_group.drop(columns=excluded_columns).mean(axis=0).round().astype(int)
             for col in excluded_columns:
                 if col in sub_group.columns:
-                    mean_values[col] = sub_group[col].iloc[0]
+                    mean_values[col] = int(sub_group[col].iloc[0])
             mean_values[id_column] = id_value
             aggregated_data.append(mean_values)
 
