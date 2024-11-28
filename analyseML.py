@@ -36,8 +36,8 @@ EXPORT_PATH_TESTS_BIN = './CICIoV2024/tests/binary/'
 # }
 
 models = {
-    "XGBoost": XGBClassifier(use_label_encoder=False, eval_metric='logloss'),
-    "LightGBM": LGBMClassifier(min_split_gain=-2),
+    "XGBoost": XGBClassifier(eval_metric='logloss'),
+    "LightGBM": LGBMClassifier(min_split_gain=0.0),
     # "ExtraTrees": ExtraTreesClassifier()
 }
 
@@ -79,7 +79,7 @@ import pandas as pd
 import time
 
 def analyse_time_and_res():
-    i = 1
+    i = 10
     execution_times = []
 
     models = {
@@ -89,10 +89,9 @@ def analyse_time_and_res():
     FU_values = []
     FL_values = []
 
-    while i < 200:
-
-        aggregated_df_atk = aggregate_columns(decimal.df_atk_clean, id_column='ID', group_size=i)
-        aggregated_df_benign = aggregate_columns(decimal.df_benign_clean, id_column='ID', group_size=i)
+    while i < 300:
+        aggregated_df_atk = aggregate_columns2(decimal.df_atk_clean, id_column='ID', group_size=i)
+        aggregated_df_benign = aggregate_columns2(decimal.df_benign_clean, id_column='ID', group_size=i)
 
         aggregated_df = pd.concat([aggregated_df_atk, aggregated_df_benign], ignore_index=True)
         aggregated_df = aggregated_df.drop(columns=['ID'])
@@ -116,7 +115,7 @@ def analyse_time_and_res():
             cm = confusion_matrix(y_test, predictions)
             cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
-            # La c'est les Forces UPPER/LOWER
+            # les forceux
             n_classes = cm_normalized.shape[0]
             for idx in range(n_classes):
                 FU += cm_normalized[idx, idx+1:].sum()
@@ -146,9 +145,10 @@ def analyse_time_and_res():
     execution_times_df['Force Upper (FU)'] = FU_values
     execution_times_df['Force Lower (FL)'] = FL_values
 
-    plt.figure(figsize=(14, 8))
+    # Graphiqeuuu
+    plt.figure(figsize=(14, 12))
 
-    plt.subplot(2, 1, 1)
+    plt.subplot(3, 1, 1)
     plt.grid(visible=True)
     plt.plot(
         execution_times_df['Group Size (i)'], 
@@ -160,7 +160,7 @@ def analyse_time_and_res():
     plt.title('Number of Misclassifications by Group Size')
     plt.legend()
 
-    plt.subplot(2, 1, 2)
+    plt.subplot(3, 1, 2)
     plt.grid(visible=True)
     plt.plot(
         execution_times_df['Group Size (i)'], 
@@ -177,9 +177,33 @@ def analyse_time_and_res():
     plt.title('Force Upper (FU) and Force Lower (FL) by Group Size')
     plt.legend()
 
+    plt.subplot(3, 1, 3)
+    plt.grid(visible=True)
+    plt.plot(
+        execution_times_df['Group Size (i)'], 
+        execution_times_df['Execution Time (s)'], 
+        marker='^', label='Execution Time', color='purple'
+    )
+    plt.xlabel('Group Size (i)')
+    plt.ylabel('Execution Time (s)')
+    plt.title('Execution Time by Group Size')
+    plt.legend()
+
     plt.tight_layout()
     plt.show()
 
+    print(execution_times_df[execution_times_df['No Misclassification'] == False])
+
     return execution_times_df
 
-execution_times_df = analyse_time_and_res()
+# aggregated_df_atk = aggregate_columns2(df=decimal.df_atk_clean, id_column='ID')
+# aggregated_df_benign = aggregate_columns2(df=decimal.df_benign_clean, id_column='ID')
+
+# aggregated_df = pd.concat([aggregated_df_atk, aggregated_df_benign], ignore_index=True)
+# aggregated_df = aggregated_df.drop(columns=['ID'])
+
+# # Save this df in csv
+# aggregated_df.to_csv(f'{EXPORT_PATH_TESTS_DEC}hehe.csv', index=False)
+
+df = pd.read_csv(f'{EXPORT_PATH_TESTS_DEC}hehe.csv')
+diagnostic = diagnostic(models=models,df=df)

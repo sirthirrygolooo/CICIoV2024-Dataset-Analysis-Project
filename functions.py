@@ -35,6 +35,19 @@ def prepare_data(df):
     y = LabelEncoder().fit_transform(df['isMechant'])
     return train_test_split(X, y, test_size=0.2, random_state=42)
 
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+
+def prepare_data(df, target_column='isMechant', test_size=0.2, random_state=42):
+    if target_column not in df.columns:
+        raise ValueError(f"La colonne cible '{target_column}' n'existe pas dans le DataFrame.")
+    
+    X = df.drop(columns=[target_column])
+    y = LabelEncoder().fit_transform(df[target_column])
+    
+    return train_test_split(X, y, test_size=test_size, random_state=random_state)
+
+
 def plot_feature_importance(model, model_name, feature_names, top_number=None):
     importance = model.feature_importances_
     indices = np.argsort(importance)[::-1]
@@ -119,7 +132,35 @@ def aggregate_columns(df, id_column, group_size=100, excluded_columns=None):
     
     return aggregated_df
 
-import pandas as pd
+def aggregate_columns2(df, id_column, group_size=100, excluded_columns=None):
+    if excluded_columns is None:
+        excluded_columns = []
+
+    df['unique'] = df.drop(columns=excluded_columns, errors='ignore').nunique(axis=1)
+    aggregated_columns = df.T.groupby(df.columns).sum().T
+
+    aggregated_data = []
+
+    grouped = aggregated_columns.groupby(id_column)
+
+    for id_value, group in grouped:
+        for i in range(0, len(group), group_size):
+            sub_group = group.iloc[i:i + group_size]
+            
+            mean_values = sub_group.drop(columns=excluded_columns, errors='ignore').mean(axis=0).round().astype(int)
+            
+            for col in excluded_columns:
+                if col in sub_group.columns:
+                    mean_values[col] = int(sub_group[col].iloc[0])
+            
+            mean_values[id_column] = id_value
+            
+            aggregated_data.append(mean_values)
+
+    # Transformer en DataFrame
+    aggregated_df = pd.DataFrame(aggregated_data)
+
+    return aggregated_df
 
 def aggregate_binary_dataframe(df,id_prefix='ID', group_size=519, excluded_columns=None):
     if excluded_columns is None:
@@ -193,3 +234,73 @@ def plot_normalized_confusion_matrix_with_forces(model, X_test, y_test, model_na
     print(f"Force Lower (FL): {FL:.2f}")
     
     return cm_normalized, FU, FL
+
+def diagnostic(models, df):
+    X, y = df.drop(columns=['isMechant', 'is_spoofing']), df['isMechant']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    results = []
+    total_correct = 0
+    total_incorrect = 0
+    execution_times = []
+
+    for model_name, model in models.items():
+        start_time = time.time()
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+
+        cm = confusion_matrix(y_test, y_pred)
+        correct_predictions = np.trace(cm)
+        incorrect_predictions = cm.sum() - correct_predictions
+        total_correct += correct_predictions
+        total_incorrect += incorrect_predictions
+        execution_time = time.time() - start_time
+        execution_times.append(execution_time)
+
+        spoofing_df = df[df['isMechant'] == 1]
+        if len(spoofing_df) > 0:
+            X_spoof, y_spoof = spoofing_df.drop(columns=['isMechant', 'is_spoofing']), spoofing_df['is_spoofing']
+            X_train_spoof, X_test_spoof, y_train_spoof, y_test_spoof = train_test_split(X_spoof, y_spoof, test_size=0.2, random_state=42)
+
+            model_secondary = model
+            model_secondary.fit(X_train_spoof, y_train_spoof)
+            y_pred_spoof = model_secondary.predict(X_test_spoof)
+
+            cm_spoof = confusion_matrix(y_test_spoof, y_pred_spoof)
+            correct_spoof = np.trace(cm_spoof)
+            incorrect_spoof = cm_spoof.sum() - correct_spoof
+
+            results.append({
+                'Model': model_name,
+                'Correct Predictions (Attack)': correct_predictions,
+                'Incorrect Predictions (Attack)': incorrect_predictions,
+                'Correct Predictions (Spoofing)': correct_spoof,
+                'Incorrect Predictions (Spoofing)': incorrect_spoof,
+                'Execution Time (s)': execution_time
+            })
+
+    df_results = pd.DataFrame(results)
+
+    plt.figure(figsize=(14, 8))
+    plt.subplot(2, 1, 1)
+    plt.bar(df_results['Model'], df_results['Correct Predictions (Attack)'], color='green', label='Correct Predictions')
+    plt.bar(df_results['Model'], df_results['Incorrect Predictions (Attack)'], color='red', bottom=df_results['Correct Predictions (Attack)'], label='Incorrect Predictions')
+    plt.title('Correct vs Incorrect Predictions for Attacks')
+    plt.ylabel('Number of Predictions')
+    plt.legend()
+
+    plt.subplot(2, 1, 2)
+    plt.plot(df_results['Model'], df_results['Execution Time (s)'], marker='o', color='blue', label='Execution Time')
+    plt.title('Execution Time per Model')
+    plt.ylabel('Time (s)')
+    plt.xlabel('Model')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+    print(f"Total Correct Predictions: {total_correct}")
+    print(f"Total Incorrect Predictions: {total_incorrect}")
+    return df_results
+
+
