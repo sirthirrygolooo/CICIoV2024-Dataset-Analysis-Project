@@ -35,3 +35,31 @@ aggregated_df_benign = aggregate_columns(df_benign_clean, id_column='ID')
 
 aggregated_df = pd.concat([aggregated_df_atk, aggregated_df_benign], ignore_index=True)
 aggregated_df = aggregated_df.drop(columns=['ID'])
+
+def prepare_full_df():
+    df_atk['spoofing_type'] = 0
+    df_atk.loc[df_atk['specific_class'] == 'GAS', 'type_spoofing'] = 1
+    df_atk.loc[df_atk['specific_class'] == 'RPM', 'type_spoofing'] = 2
+    df_atk.loc[df_atk['specific_class'] == 'SPEED', 'type_spoofing'] = 3
+    df_atk.loc[df_atk['specific_class'] == 'STEERING_WHEEL', 'type_spoofing'] = 4
+
+    df_benign['spoofing_type'] = 0
+
+    df_atk.drop(columns=['label', 'specific_class', 'category'], inplace=True)
+    df_benign.drop(columns=['label', 'specific_class', 'category'], inplace=True)
+
+    df_atk.to_csv('./CICIoV2024/tests/decimal/decimal_full_atk.csv', index=False)
+    df_benign.to_csv('./CICIoV2024/tests/decimal/decimal_full_benign.csv', index=False)
+
+
+try :
+    full_df_atk = pd.read_csv('./CICIoV2024/tests/decimal/decimal_full_atk.csv')
+    full_df_benign = pd.read_csv('./CICIoV2024/tests/decimal/decimal_full_benign.csv')
+except FileNotFoundError:
+    print('[!] full_df files not found, creating it... It can take few minutes')
+    prepare_full_df()
+    full_df_atk = pd.read_csv('./CICIoV2024/tests/decimal/decimal_full_atk.csv')
+    full_df_benign = pd.read_csv('./CICIoV2024/tests/decimal/decimal_full_benign.csv')
+
+
+    

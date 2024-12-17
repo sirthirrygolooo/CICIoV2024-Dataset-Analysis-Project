@@ -25,6 +25,7 @@ df_combined = df_combined.drop(columns=['label','specific_class', 'category'])
 df_combined.to_csv('./CICIoV2024/binary/good.csv', index=False)
 
 
+
 aggregated_df_atk = aggregate_binary_dataframe(df_atk_clean)
 aggregated_df_benign = aggregate_binary_dataframe(df_benign_clean)
 

@@ -37,7 +37,14 @@ EXPORT_PATH_TESTS_BIN = './CICIoV2024/tests/binary/'
 
 models = {
     "XGBoost": XGBClassifier(eval_metric='logloss'),
-    "LightGBM": LGBMClassifier(min_split_gain=0.0),
+    "LightGBM": LGBMClassifier(
+        min_split_gain=0.0,     # Gain minimum pour un split
+        max_depth=10,           # Profondeur maximale de l'arbre
+        min_child_samples=5,    # Nombre minimum d'échantillons pour un split
+        learning_rate=0.1,      # Taux d'apprentissage
+        n_estimators=100,
+        force_col_wise=True,
+        verbose=-1 ),
     # "ExtraTrees": ExtraTreesClassifier()
 }
 
@@ -202,8 +209,25 @@ def analyse_time_and_res():
 # aggregated_df = pd.concat([aggregated_df_atk, aggregated_df_benign], ignore_index=True)
 # aggregated_df = aggregated_df.drop(columns=['ID'])
 
-# # Save this df in csv
 # aggregated_df.to_csv(f'{EXPORT_PATH_TESTS_DEC}hehe.csv', index=False)
 
-df = pd.read_csv(f'{EXPORT_PATH_TESTS_DEC}hehe.csv')
-diagnostic = diagnostic(models=models,df=df)
+# df = pd.read_csv(f'{EXPORT_PATH_TESTS_DEC}hehe.csv')
+
+
+
+# diagnostic = diagnosticv1(models=models,df=df)
+
+# diagnosticv2 = diagnosticv2(models=models,df=df)
+
+try :
+    full_df_aggregated = pd.read_csv(f'{EXPORT_PATH_TESTS_DEC}full_df_aggregated.csv')
+except FileNotFoundError:
+    print("[!] full_df_aggeated.csv not found, creating it... It can take few minutes")
+    full_df_atk_aggregated = aggregate_columns2(decimal.full_df_atk, id_column='ID')
+    full_df_benign_aggregated = aggregate_columns2(decimal.full_df_benign, id_column='ID')
+
+    full_df_aggregated = pd.concat([full_df_atk_aggregated, full_df_benign_aggregated], ignore_index=True)
+
+    full_df_aggregated.to_csv(f'{EXPORT_PATH_TESTS_DEC}full_df_aggregated.csv', index=False)
+
+diganostic = diagnostic_final(models=models,df=full_df_aggregated)
