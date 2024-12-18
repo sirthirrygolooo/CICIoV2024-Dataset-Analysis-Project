@@ -38,10 +38,10 @@ aggregated_df = aggregated_df.drop(columns=['ID'])
 
 def prepare_full_df():
     df_atk['spoofing_type'] = 0
-    df_atk.loc[df_atk['specific_class'] == 'GAS', 'type_spoofing'] = 1
-    df_atk.loc[df_atk['specific_class'] == 'RPM', 'type_spoofing'] = 2
-    df_atk.loc[df_atk['specific_class'] == 'SPEED', 'type_spoofing'] = 3
-    df_atk.loc[df_atk['specific_class'] == 'STEERING_WHEEL', 'type_spoofing'] = 4
+    df_atk.loc[df_atk['specific_class'] == 'GAS', 'spoofing_type'] = 1
+    df_atk.loc[df_atk['specific_class'] == 'RPM', 'spoofing_type'] = 2
+    df_atk.loc[df_atk['specific_class'] == 'SPEED', 'spoofing_type'] = 3
+    df_atk.loc[df_atk['specific_class'] == 'STEERING_WHEEL', 'spoofing_type'] = 4
 
     df_benign['spoofing_type'] = 0
 
