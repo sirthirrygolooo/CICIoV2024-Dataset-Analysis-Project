@@ -132,7 +132,7 @@ def aggregate_columns(df, id_column, group_size=100, excluded_columns=None):
     
     return aggregated_df
 
-def aggregate_columns2(df, id_column, group_size=100, excluded_columns=None):
+def aggregate_columns2(df, id_column, group_size=1, excluded_columns=None):
     if excluded_columns is None:
         excluded_columns = []
 
