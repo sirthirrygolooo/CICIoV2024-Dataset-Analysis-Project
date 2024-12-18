@@ -231,9 +231,9 @@ except FileNotFoundError:
     full_df_aggregated.to_csv(f'{EXPORT_PATH_TESTS_DEC}full_df_aggregated.csv', index=False)
 
 full_df = pd.concat([decimal.full_df_atk, decimal.full_df_benign], ignore_index=True)
-full_df.to_csv(f'{EXPORT_PATH_TESTS_DEC}full_df.csv', index=False)
+# full_df.to_csv(f'{EXPORT_PATH_TESTS_DEC}full_df.csv', index=False)
 
-# diagnosticv1 = diagnosticv1(models=models,df=full_df_aggregated)
-# diagnosticv2 = diagnosticv2(models=models,df=full_df_aggregated)
-# diagnosticv3 = diagnosticv3(models=models,df=full_df_aggregated)
-# diganostic_final = diagnostic_final(models=models,df=full_df_aggregated)
+diagnosticv1 = diagnosticv1(models=models,df=full_df)
+diagnosticv2 = diagnosticv2(models=models,df=full_df)
+# diagnosticv3 = diagnosticv3(models=models,df=full_df)
+diganostic_final = diagnostic_final(models=models,df=full_df)
