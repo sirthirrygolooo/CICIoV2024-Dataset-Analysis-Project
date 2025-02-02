@@ -221,6 +221,7 @@ def analyse_time_and_res():
 
 try :
     full_df_aggregated = pd.read_csv(f'{EXPORT_PATH_TESTS_DEC}full_df_aggregated.csv')
+    print("[*] Reading full_df_aggregated.csv")
 except FileNotFoundError:
     print("[!] full_df_aggeated.csv not found, creating it... It can take few minutes")
     full_df_atk_aggregated = aggregate_columns2(decimal.full_df_atk, id_column='ID')
