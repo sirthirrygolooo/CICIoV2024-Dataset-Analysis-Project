@@ -2,8 +2,6 @@
 
 This repository contains tests, algos and analysis
 
-### **Article and reports in progress**
-
 ### Screenshots 
 
 #### <u>Aggregation by group size of 100</u>
