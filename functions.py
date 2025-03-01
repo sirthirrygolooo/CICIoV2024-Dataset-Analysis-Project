@@ -686,6 +686,7 @@ from sklearn.metrics import f1_score
 import seaborn as sns
 import pandas as pd
 
+# Je comprends pas trop l'intéret de cette fonction ou si c'est bien comme ça qu'il la veut TBH
 def plot_f1_vs_feature_importance(model, X_test, y_test, class_labels):
     y_pred = model.predict(X_test)
 

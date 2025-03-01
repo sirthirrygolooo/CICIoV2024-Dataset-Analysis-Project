@@ -239,7 +239,7 @@ full_df = pd.concat([decimal.full_df_atk, decimal.full_df_benign], ignore_index=
 # diagnosticv3 = diagnosticv3(models=models,df=full_df)
 # diganostic_final = diagnostic_final(models=models,df=full_df)
 
-X_train, X_test, y_train, y_test = prepare_data(decimal.df_combined)
+X_train, X_test, y_train, y_test = prepare_data(full_df)
 for model_name, model in models.items():
     print('Model : ', model_name)
     plot_learning_curve(model, X_train, y_train, cv=5, scoring='accuracy')
