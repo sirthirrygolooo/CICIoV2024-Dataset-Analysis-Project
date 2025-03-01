@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score, classification_report, roc_auc_score, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, roc_auc_score, confusion_matrix, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 import seaborn as sns
@@ -649,4 +649,70 @@ def diagnostic_final(models, df):
     plt.show()
 
     return results_df
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import learning_curve
+
+def plot_learning_curve(model, X, y, cv=5, scoring='accuracy', train_sizes=np.linspace(0.1, 1.0, 5)):
+    train_sizes, train_scores, test_scores = learning_curve(
+        model, X, y, cv=cv, scoring=scoring, train_sizes=train_sizes, n_jobs=-1
+    )
+
+    train_scores_mean = np.mean(train_scores, axis=1)
+    train_scores_std = np.std(train_scores, axis=1)
+    test_scores_mean = np.mean(test_scores, axis=1)
+    test_scores_std = np.std(test_scores, axis=1)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(train_sizes, train_scores_mean, 'o-', color='r', label='Score d\'entraînement')
+    plt.plot(train_sizes, test_scores_mean, 'o-', color='g', label='Score de validation croisée')
+    plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
+                     train_scores_mean + train_scores_std, alpha=0.1, color='r')
+    plt.fill_between(train_sizes, test_scores_mean - test_scores_std,
+                     test_scores_mean + test_scores_std, alpha=0.1, color='g')
+
+    plt.title('Courbe d\'apprentissage')
+    plt.xlabel('Taille de l\'ensemble d\'entraînement')
+    plt.ylabel('Score')
+    plt.legend(loc='best')
+    plt.grid()
+    plt.show()
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import f1_score
+import seaborn as sns
+import pandas as pd
+
+def plot_f1_vs_feature_importance(model, X_test, y_test, class_labels):
+    y_pred = model.predict(X_test)
+
+    f1_scores = f1_score(y_test, y_pred, average=None, labels=np.unique(y_test))
+
+    feature_importances = model.feature_importances_
+
+    results = pd.DataFrame({
+        'Feature': X_test.columns,
+        'Importance': feature_importances
+    })
+
+    # enlever is_spoofing ?
+    results = results[results['Feature'] != 'is_spoofing']
+
+    results['F1-Score'] = np.mean(f1_scores)
+
+    plt.figure(figsize=(14, 7))
+
+    sns.barplot(x='Importance', y='Feature', data=results, color='skyblue', label='Feature Importance')
+
+    plt.axvline(x=np.mean(f1_scores), color='salmon', linestyle='--', label='Mean F1-Score')
+
+    plt.title('Comparaison entre F1-Score et Importance des Caractéristiques')
+    plt.xlabel('Score')
+    plt.ylabel('Caractéristiques')
+    plt.legend(loc='upper right')
+    plt.tight_layout()
+    plt.show()
 

@@ -234,7 +234,17 @@ except FileNotFoundError:
 full_df = pd.concat([decimal.full_df_atk, decimal.full_df_benign], ignore_index=True)
 # full_df.to_csv(f'{EXPORT_PATH_TESTS_DEC}full_df.csv', index=False)
 
-diagnosticv1 = diagnosticv1(models=models,df=full_df)
-diagnosticv2 = diagnosticv2(models=models,df=full_df)
+# diagnosticv1 = diagnosticv1(models=models,df=full_df)
+# diagnosticv2 = diagnosticv2(models=models,df=full_df)
 # diagnosticv3 = diagnosticv3(models=models,df=full_df)
-diganostic_final = diagnostic_final(models=models,df=full_df)
+# diganostic_final = diagnostic_final(models=models,df=full_df)
+
+X_train, X_test, y_train, y_test = prepare_data(decimal.df_combined)
+for model_name, model in models.items():
+    print('Model : ', model_name)
+    plot_learning_curve(model, X_train, y_train, cv=5, scoring='accuracy')
+    
+    model.fit(X_train, y_train)
+
+    plot_f1_vs_feature_importance(model, X_test, y_test, class_labels=['Benign', 'Attack'])
+
